@@ -1,3 +1,4 @@
+@import "@fontsource-variable/jetbrains-mono";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -8,8 +9,9 @@
      顺序即优先级：浏览器逐个尝试，找不到就换下一个，最后兜底 */
   --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
 
-  /* 代码字体（等宽）：font-mono，用于代码块和行内代码 */
-  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* 代码字体（等宽）：font-mono，用于代码块和行内代码
+     "JetBrains Mono Variable" 由上方 @fontsource 包提供（自托管 woff2） */
+  --font-mono: "JetBrains Mono Variable", "Cascadia Code", Consolas, monospace;
 
   /* 衬线字体：font-serif，给标题或强调文字用（待会演示） */
   --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
