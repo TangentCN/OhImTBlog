@@ -1,3 +1,9 @@
+## Project Context
+
+This is a personal static blog (Astro 7 + Tailwind CSS v4). Read **PROJECT.md** for the full project archive: background, user profile, tech stack, history, current progress, and roadmap.
+
+Key facts about the user: a **Chinese-speaking CS student with no prior frontend experience**, learning-oriented (wants to understand the code, not just ship it). Communicate in 简体中文; explain concepts using this project's real code before making changes; proceed in verifiable stages.
+
 ## Development
 
 When starting the dev server, use background mode:
