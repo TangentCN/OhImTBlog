@@ -2,8 +2,15 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* 全站正文字体令牌：覆盖 Tailwind 默认的 --font-sans
-     演示用衬线字体，方便直观看到"字体变了"：
-     Windows 上会是宋体(SimSun)、macOS 上是宋体-简(Songti SC) */
-  --font-sans: "SimSun", "Songti SC", "Noto Serif SC", serif;
+  /* ===== 字体令牌：在 @theme 里定义后，全站可用 ===== */
+
+  /* 正文字体（无衬线）：font-sans，也是全站默认继承的字体
+     顺序即优先级：浏览器逐个尝试，找不到就换下一个，最后兜底 */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+
+  /* 代码字体（等宽）：font-mono，用于代码块和行内代码 */
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  /* 衬线字体：font-serif，给标题或强调文字用（待会演示） */
+  --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
 }
