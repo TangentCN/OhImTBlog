@@ -11,6 +11,8 @@ const { title = "OhImT 的博客", description = "" } = Astro.props;
 
 // 引入全局样式。不 import 这一行，Tailwind 完全不生效
 import "../styles/global.css";
+
+// 注：模板区 <slot /> 是"插座"，子页面包裹的内容会填进这里
 ---
 
 <!doctype html>
@@ -31,7 +33,6 @@ import "../styles/global.css";
       </div>
     </header>
 
-    <!-- 子页面的内容会填进这个"插座" -->
     <slot />
 
     <footer class="border-t border-gray-200">

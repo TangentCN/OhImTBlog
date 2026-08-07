@@ -1,0 +1,20 @@
+---
+// 文章卡片：首页列表里的一篇文章
+// CollectionEntry<"blog"> 是 Astro 根据内容集合自动生成的类型，
+// 它保证 post.data / post.id 都是合法的（写错会报错）
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+
+const { post } = Astro.props;
+// 注：post.id 就是文件名（不含 .md），它决定详情页 URL：/blog/文件名/
+---
+<article class="border-b border-gray-200 py-6">
+  <h2 class="text-xl font-semibold">
+    <a href={`/blog/${post.id}/`} class="hover:text-blue-600">{post.data.title}</a>
+  </h2>
+  <time class="text-sm text-gray-500">{post.data.pubDate.toLocaleDateString()}</time>
+  {post.data.description && <p class="mt-2 text-gray-700">{post.data.description}</p>}
+</article>
