@@ -1,17 +1,11 @@
 ---
-
+// 首页：阶段 1 先用一句标题验证 Tailwind 生效，阶段 3 会改造成文章列表
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <main class="mx-auto max-w-2xl px-4 py-10">
+    <h1 class="text-3xl font-bold">OhImT 的博客</h1>
+    <p class="mt-4 text-gray-600">欢迎来到我的博客。</p>
+  </main>
+</BaseLayout>

@@ -8,6 +8,21 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
+## Version Control
+
+This project is managed with git. The agreed workflow:
+
+- Commit after each completed development phase, so every milestone is recoverable.
+- Before starting a phase, run `git status` to confirm the working tree state.
+- Write clear commit messages describing what the phase delivered.
+
+## Local Ports
+
+Dev server runs on fixed ports (configured in `astro.config.mjs`):
+
+- dev server: `45231`
+- preview: `45232`
+
 ## Documentation
 
 Full documentation: https://docs.astro.build

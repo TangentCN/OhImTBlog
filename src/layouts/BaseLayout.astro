@@ -1,0 +1,43 @@
+---
+// 布局组件：全站统一的 HTML 外壳（head + 顶部导航 + 底部版权）
+// 页面通过 <BaseLayout>包裹内容</BaseLayout> 复用这套外壳
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = "OhImT 的博客", description = "" } = Astro.props;
+
+// 引入全局样式。不 import 这一行，Tailwind 完全不生效
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>{title}</title>
+  </head>
+
+  <body class="min-h-screen bg-white text-gray-900 antialiased">
+    <header class="border-b border-gray-200">
+      <div class="mx-auto max-w-2xl px-4 py-6">
+        <a href="/" class="text-xl font-bold hover:text-blue-600">OhImT 的博客</a>
+      </div>
+    </header>
+
+    <!-- 子页面的内容会填进这个"插座" -->
+    <slot />
+
+    <footer class="border-t border-gray-200">
+      <div class="mx-auto max-w-2xl px-4 py-8 text-sm text-gray-500">
+        © {new Date().getFullYear()} OhImT 的博客
+      </div>
+    </footer>
+  </body>
+</html>
