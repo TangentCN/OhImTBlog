@@ -14,7 +14,7 @@ const posts = (await getCollection("blog")).sort(
 
 <BaseLayout>
   <main class="mx-auto max-w-2xl px-4 py-10">
-    <h1 class="mb-8 text-3xl font-bold font-serif">文章列表</h1>
+    <h1 class="mb-8 text-3xl font-bold">文章列表</h1>
     {posts.map((post) => <PostCard post={post} />)}
   </main>
 </BaseLayout>
