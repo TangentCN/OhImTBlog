@@ -1,0 +1,34 @@
+---
+// 文章详情页（动态路由）：
+// 文件名里的 [...slug] 表示"这一段的任意值都归这个页面管"，
+// 所以 /blog/my-first-post/ 和 /blog/second-post/ 都走这里。
+// getStaticPaths 在构建时把每篇文章都变成一个独立 URL（纯静态也能有多个详情页）
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+// 构建时运行：遍历所有文章，为每篇生成 { params, props }
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { slug: post.id }, // slug 决定 URL（就是文件名）
+    props: { post },           // 把整篇文章数据传给当前页面
+  }));
+}
+
+const { post } = Astro.props;
+// render 把 Markdown 编译成一个组件，<Content /> 再把正文"画"到页面上
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <main class="mx-auto max-w-2xl px-4 py-10">
+    <article class="prose prose-lg">
+      <h1>{post.data.title}</h1>
+      <p class="text-sm text-gray-500">{post.data.pubDate.toLocaleDateString()}</p>
+      <Content />
+    </article>
+    <a href="/" class="mt-8 inline-block text-blue-600">← 返回首页</a>
+  </main>
+</BaseLayout>
