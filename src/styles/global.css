@@ -1,2 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@theme {
+  /* 全站正文字体令牌：覆盖 Tailwind 默认的 --font-sans
+     演示用衬线字体，方便直观看到"字体变了"：
+     Windows 上会是宋体(SimSun)、macOS 上是宋体-简(Songti SC) */
+  --font-sans: "SimSun", "Songti SC", "Noto Serif SC", serif;
+}
