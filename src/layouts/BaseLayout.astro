@@ -9,6 +9,11 @@ interface Props {
 
 const { title = "OhImT 的博客", description = "" } = Astro.props;
 
+// 当前页路径检测：用于顶部导航「当前页高亮」
+// Astro.url.pathname 是浏览器地址，如 "/" 或 "/blog/my-first-post/"
+const currentPath = Astro.url.pathname;
+const isBlog = currentPath.startsWith("/blog");
+
 // 引入全局样式。不 import 这一行，Tailwind 完全不生效
 import "../styles/global.css";
 
@@ -28,8 +33,18 @@ import "../styles/global.css";
 
   <body class="min-h-screen bg-gray-950 text-gray-100 antialiased">
     <header class="border-b border-gray-800">
-      <div class="mx-auto max-w-2xl px-4 py-6">
+      <div class="mx-auto flex max-w-2xl items-center justify-between px-4 py-6">
         <a href="/" class="text-xl font-bold hover:text-blue-400">OhImT 的博客</a>
+        <nav class="flex items-center gap-5 text-sm">
+          <a
+            href="/"
+            class={currentPath === "/" ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+          >首页</a>
+          <a
+            href="/blog/"
+            class={isBlog ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+          >文章</a>
+        </nav>
       </div>
     </header>
 

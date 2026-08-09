@@ -1,0 +1,20 @@
+---
+// 文章列表页（/blog/）：
+// 构建时把 src/content/blog/ 里的所有文章取出来，按发布日期倒序展示
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getCollection } from "astro:content";
+
+// getCollection 返回顺序不保证，必须自己排序。
+// valueOf() 把 Date 变成毫秒数字方便比较，大的在前 = 新的在前
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<BaseLayout>
+  <main class="mx-auto max-w-2xl px-4 py-10">
+    <h1 class="mb-8 text-3xl font-bold">文章列表</h1>
+    {posts.map((post) => <PostCard post={post} />)}
+  </main>
+</BaseLayout>

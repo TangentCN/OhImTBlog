@@ -6,7 +6,6 @@
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
 
 // 构建时运行：遍历所有文章，为每篇生成 { params, props }
 export async function getStaticPaths() {
@@ -36,6 +35,6 @@ const { Content } = await render(post);
       )}
       <Content />
     </article>
-    <a href="/" class="mt-8 inline-block text-blue-400">← 返回首页</a>
+    <a href="/blog/" class="mt-8 inline-block text-blue-400">← 返回文章列表</a>
   </main>
 </BaseLayout>
