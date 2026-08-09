@@ -15,4 +15,22 @@
 
   /* 衬线字体：font-serif，给标题或强调文字用（待会演示） */
   --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+
+  /* ===== 配色令牌：定义后自动生成 bg-page / text-ink / border-line 等工具类
+     改这里的色值 = 全站换主题。语义命名：代表「用途」而非「颜色名」 ===== */
+
+  /* 背景与文字 */
+  --color-page: #030712;    /* 页面背景（原 gray-950） */
+  --color-ink: #f3f4f6;     /* 主文字（原 gray-100） */
+  --color-soft: #d1d5db;    /* 次要文字：摘要/导航项（原 gray-300） */
+  --color-muted: #9ca3af;   /* 弱文字：日期（原 gray-400） */
+
+  /* 边框与底 */
+  --color-line: #1f2937;    /* 分隔线/边框（原 gray-800） */
+  --color-surface: #1f2937; /* 标签徽章底（原 gray-800） */
+
+  /* 强调色：高亮/链接/按钮 */
+  --color-accent: #fef08a;      /* 强调色（原 yellow-200） */
+  --color-accent-soft: #fef9c3; /* 强调 hover（原 yellow-100） */
+  --color-on-accent: #030712;   /* 强调底上的文字：按钮深字（原 gray-950） */
 }

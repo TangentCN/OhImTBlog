@@ -31,28 +31,34 @@ import "../styles/global.css";
     <title>{title}</title>
   </head>
 
-  <body class="min-h-screen bg-gray-950 text-gray-100 antialiased">
-    <header class="border-b border-gray-800">
-      <div class="mx-auto flex max-w-2xl items-center justify-between px-4 py-6">
-        <a href="/" class="text-xl font-bold hover:text-blue-400">OhImT 的博客</a>
-        <nav class="flex items-center gap-5 text-sm">
+  <body class="bg-page text-ink antialiased">
+    <!-- 外层包裹（header + 内容区）：整体至少一屏高，footer 紧跟其外、顶部恰落在首屏底部线 -->
+    <div class="flex min-h-screen flex-col">
+      <header class="relative border-b border-line">
+        <!-- 站名直接靠屏幕最左（不受内容宽度限制） -->
+        <a href="/" class="inline-block px-4 py-6 text-xl font-bold hover:text-accent">OhImT 的博客</a>
+        <!-- 导航 absolute 相对整个 header（=整行宽度）水平居中，即屏幕正中 -->
+        <nav class="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-5 text-sm">
           <a
             href="/"
-            class={currentPath === "/" ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+            class={currentPath === "/" ? "text-accent font-bold" : "text-soft font-bold hover:text-accent"}
           >首页</a>
           <a
             href="/blog/"
-            class={isBlog ? "text-blue-400" : "text-gray-300 hover:text-blue-400"}
+            class={isBlog ? "text-accent font-bold" : "text-soft font-bold hover:text-accent"}
           >文章</a>
         </nav>
+      </header>
+
+      <!-- flex-1：内容区在包裹内撑满剩余高度，footer 被顶到首屏底部线之下 -->
+      <div class="flex-1">
+        <slot />
       </div>
-    </header>
+    </div>
 
-    <slot />
-
-    <footer class="border-t border-gray-800">
-      <div class="mx-auto max-w-2xl px-4 py-8 text-sm text-gray-400">
-        © {new Date().getFullYear()} OhImT 的博客
+    <footer class="border-t border-line">
+      <div class="mx-auto max-w-3xl px-4 py-8 text-center text-sm text-accent">
+        © {new Date().getFullYear()} OhImT
       </div>
     </footer>
   </body>
