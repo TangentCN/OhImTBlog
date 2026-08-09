@@ -11,10 +11,10 @@ interface Props {
 const { post } = Astro.props;
 // 注：post.id 就是文件名（不含 .md），它决定详情页 URL：/blog/文件名/
 ---
-<article class="border-b border-gray-200 py-6">
+<article class="border-b border-gray-800 py-6">
   <h2 class="text-xl font-semibold">
-    <a href={`/blog/${post.id}/`} class="hover:text-blue-600">{post.data.title}</a>
+    <a href={`/blog/${post.id}/`} class="hover:text-blue-400">{post.data.title}</a>
   </h2>
-  <time class="text-sm text-gray-500">{post.data.pubDate.toLocaleDateString()}</time>
-  {post.data.description && <p class="mt-2 text-gray-700">{post.data.description}</p>}
+  <time class="text-sm text-gray-400">{post.data.pubDate.toLocaleDateString()}</time>
+  {post.data.description && <p class="mt-2 text-gray-300">{post.data.description}</p>}
 </article>
