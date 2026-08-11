@@ -17,6 +17,10 @@ const isBlog = currentPath.startsWith("/blog");
 // 引入全局样式。不 import 这一行，Tailwind 完全不生效
 import "../styles/global.css";
 
+// 页面切换动画：启用 Astro 内置的 View Transitions（SPA 式导航 + 过渡）
+// 组件加在共享布局的 <head> 里 → 全站所有页面生效
+import { ClientRouter } from "astro:transitions";
+
 // 注：模板区 <slot /> 是"插座"，子页面包裹的内容会填进这里
 ---
 
@@ -29,6 +33,7 @@ import "../styles/global.css";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <title>{title}</title>
+    <ClientRouter />
   </head>
 
   <body class="bg-page text-ink antialiased">
@@ -51,7 +56,8 @@ import "../styles/global.css";
       </header>
 
       <!-- flex-1：内容区在包裹内撑满剩余高度，footer 被顶到首屏底部线之下 -->
-      <div class="flex-1">
+      <!-- transition:animate="slide"：内容区前进时右滑入、返回时反向滑动 -->
+      <div class="flex-1" transition:animate="slide">
         <slot />
       </div>
     </div>
