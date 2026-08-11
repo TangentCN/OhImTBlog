@@ -19,7 +19,7 @@ import "../styles/global.css";
 
 // 页面切换动画：启用 Astro 内置的 View Transitions（SPA 式导航 + 过渡）
 // 组件加在共享布局的 <head> 里 → 全站所有页面生效
-import { ClientRouter } from "astro:transitions";
+import { ClientRouter, slide } from "astro:transitions";
 
 // 注：模板区 <slot /> 是"插座"，子页面包裹的内容会填进这里
 ---
@@ -57,7 +57,7 @@ import { ClientRouter } from "astro:transitions";
 
       <!-- flex-1：内容区在包裹内撑满剩余高度，footer 被顶到首屏底部线之下 -->
       <!-- transition:animate="slide"：内容区前进时右滑入、返回时反向滑动 -->
-      <div class="flex-1" transition:animate="slide">
+      <div class="flex-1" transition:animate={slide({ duration: "0.3s" })}>
         <slot />
       </div>
     </div>
@@ -69,3 +69,12 @@ import { ClientRouter } from "astro:transitions";
     </footer>
   </body>
 </html>
+
+<script>
+  // 方向感知滑动：目标页面在导航条哪一侧，就从哪一侧滑入
+  // astro:before-preparation 在每次导航前触发，改它的 direction 即可改变滑动方向
+  document.addEventListener("astro:before-preparation", (event) => {
+    // event.to 是目标 URL；/blog/*（文章/详情）在导航右侧，其余（首页）在左侧
+    event.direction = event.to.pathname.startsWith("/blog") ? "forward" : "back";
+  });
+</script>
