@@ -31,7 +31,7 @@
 
   /* 强调色：高亮/链接/按钮 */
   --color-accent: #fef08a;      /* 强调色（原 yellow-200） */
-  --color-accent-soft: #fef9c3; /* 强调 hover（原 yellow-100） */
+  --color-accent-soft: #fef0aa; /* 强调 hover（原 yellow-100） */
   --color-on-accent: #030712;   /* 强调底上的文字：按钮深字（原 gray-950） */
 }
 
