@@ -1,15 +1,24 @@
 ---
 // 彩蛋页面：无任何外链指向，只能通过直接输入地址访问（/breaking_bad/）
-// 内容：public/ascii_art.txt 的 ASCII 字符画，构建时用 fs 读取
-import BaseLayout from "../layouts/BaseLayout.astro";
+// 独立页面（不用 BaseLayout）：body 用 page 令牌色作纯色背景
+import "../styles/global.css"; // 引入 Tailwind + 配色令牌
 import fs from "node:fs";
+
 // 构建时读取 ASCII 字符画文件（路径相对项目根）
 const art = fs.readFileSync("public/ascii_art.txt", "utf-8");
 ---
 
-<BaseLayout title="🎉">
-  <main class="mx-auto max-w-5xl px-4 py-10">
-    <!-- pre 保留空格/换行；overflow-x-auto 窄屏可横向滚动 -->
-    <pre class="overflow-x-auto font-mono leading-snug text-ink/80">{art}</pre>
-  </main>
-</BaseLayout>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>🎉</title>
+  </head>
+  <!-- flex 居中：items-center 垂直居中 + justify-center 水平居中 -->
+  <body class="flex min-h-screen items-center justify-center bg-page text-ink antialiased">
+    <!-- pre 用 w-max：宽度 = 内容最宽行，字符画完整显示（不内部滚动） -->
+    <pre class="w-max font-mono leading-snug text-ink/80">{art}</pre>
+  </body>
+</html>
