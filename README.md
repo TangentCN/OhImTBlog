@@ -1,43 +1,93 @@
-# Astro Starter Kit: Minimal
+# OhImT Blog
 
-```sh
-pnpm create astro@latest -- --template minimal
+- *本文档由AI生成*
+
+一个从零搭建的个人静态博客，基于 **Astro 7 + Tailwind CSS v4**，无前端框架依赖。
+
+在线访问：https://ohimt.novic.cc
+
+## 技术栈
+
+| 层 | 技术 | 说明 |
+|---|---|---|
+| 框架 | Astro 7 | 静态输出，内置 View Transitions |
+| 样式 | Tailwind CSS v4 | `@theme` 设计令牌（字体 + 配色） |
+| 排版 | @tailwindcss/typography | `prose` 美化文章正文 |
+| 内容 | Markdown 内容集合 | glob loader + zod schema 校验 |
+| 字体 | JetBrains Mono（自托管）| 等宽代码字体 |
+| 包管理 | pnpm | |
+
+## 快速开始
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动开发服务器（后台模式，端口 45231）
+pnpm astro dev --background
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+浏览器打开 http://localhost:45231 即可预览。
 
-## 🚀 Project Structure
+## 常用命令
 
-Inside of your Astro project, you'll see the following folders and files:
+| 命令 | 作用 |
+|---|---|
+| `pnpm astro dev --background` | 后台启动 dev server（45231） |
+| `pnpm astro dev status / logs / stop` | 管理后台 dev server |
+| `pnpm run build` | 构建到 `dist/` |
+| `pnpm astro preview --background` | 预览构建产物（45232） |
+| `pnpm astro sync` | 内容集合变更后重新生成类型 |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+## 项目结构
+
+```
+src/
+├─ content.config.ts        # 内容集合 schema（文章 + 简介）
+├─ content/
+│  ├─ blog/*.md             # 文章（标题/pubDate 必填）
+│  └─ about/me.md           # 首页简介（改此文件即改简介）
+├─ layouts/BaseLayout.astro # 全站外壳（背景图/毛玻璃 header/导航）
+├─ components/PostCard.astro# 文章卡片（圆角半透明 + hover）
+├─ pages/
+│  ├─ index.astro           # 极简主页（粒子背景 + 标题 + 简介）
+│  └─ blog/
+│     ├─ index.astro        # 文章列表页
+│     └─ [...slug].astro    # 文章详情页（动态路由 + 浮动返回按钮）
+└─ styles/global.css        # Tailwind 入口 + @theme 字体/配色令牌
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 内容管理
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+**写新文章**：在 `src/content/blog/` 放一个 `.md` 文件即可，无需改代码：
 
-Any static assets, like images, can be placed in the `public/` directory.
+```markdown
+---
+title: "文章标题"
+description: "摘要（可选）"
+pubDate: 2026-08-10
+tags: ["标签", "可选"]
+---
 
-## 🧞 Commands
+正文内容（Markdown）
+```
 
-All commands are run from the root of the project, from a terminal:
+**修改首页简介**：编辑 `src/content/about/me.md`。
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+> 新增文章/文件后，先运行 `pnpm astro sync` 再构建。
 
-## 👀 Want to learn more?
+## 部署
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+GitHub 推送 → vercel自动构建部署：
+
+```bash
+git push origin master
+```
+
+约 1 分钟后访问 https://ohimt.novic.cc 查看更新。
+
+## 文档参考
+
+- [Astro 文档](https://docs.astro.build)
+- [Tailwind CSS v4 文档](https://tailwindcss.com/docs)
+- [typography 插件](https://github.com/tailwindlabs/tailwindcss-typography)
