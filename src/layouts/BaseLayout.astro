@@ -35,10 +35,12 @@ import { ClientRouter, slide } from "astro:transitions";
     <ClientRouter />
   </head>
 
-  <body class="bg-page text-ink antialiased">
+  <!-- 全站背景图：铺满视口、居中、滚动时固定；bg-page 作加载失败的底色兜底 -->
+  <body class="bg-[url('/bg.png')] bg-cover bg-center bg-fixed bg-page text-ink antialiased">
     <!-- 外层包裹（header + 内容区）：整体至少一屏高，footer 紧跟其外、顶部恰落在首屏底部线 -->
     <div class="flex min-h-screen flex-col">
-      <header class="relative border-b border-line">
+      <!-- 毛玻璃 header：sticky 固定在顶、半透明背景 + backdrop-blur，滚动时内容在 header 后模糊 -->
+      <header class="sticky top-0 z-20 border-line bg-page/5 backdrop-blur-md">
         <!-- 站名直接靠屏幕最左（不受内容宽度限制） -->
         <a href="/" class="inline-block px-4 py-6 text-xl font-bold hover:text-accent">OhImT</a>
         <!-- 导航 absolute 相对整个 header（=整行宽度）水平居中，即屏幕正中 -->
@@ -61,7 +63,7 @@ import { ClientRouter, slide } from "astro:transitions";
       </div>
     </div>
 
-    <footer class="border-t border-line">
+    <footer class="border-line">
       <div class="mx-auto max-w-3xl px-4 py-8 text-center text-sm text-accent">
         © {new Date().getFullYear()} OhImT
       </div>
