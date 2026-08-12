@@ -1,11 +1,125 @@
 ---
-// 极简主页：一句话介绍 + 引导去文章列表
+// 极简主页：粒子背景 + 标题
 // 文章列表已移到 /blog/（见 blog/index.astro）
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout>
-  <main class="mx-auto max-w-3xl px-4 py-24 text-center">
+  <!-- 粒子画布：铺满视口、z-0 在标题下面、pointer-events-none 不阻挡点击 -->
+  <canvas id="particles" class="pointer-events-none fixed inset-0 z-0"></canvas>
+
+  <!-- 标题浮在粒子之上（relative z-10） -->
+  <main class="relative z-10 mx-auto max-w-3xl px-4 py-24 text-center">
     <h1 class="text-3xl font-bold">OhImT Blog</h1>
   </main>
 </BaseLayout>
+
+<script>
+  // ===== 粒子连线网络：粒子漂浮 + 近距离连线 + 鼠标连线变亮 =====
+  // 关键：SPA 导航（View Transitions）不重跑 script，所以用 astro:page-load
+  // 在每次回到首页时重建动画；window 监听器只在整页加载时注册一次，避免叠加。
+
+  let rafId: number | null = null; // 记录动画帧 ID，用于停止旧循环
+  const mouse: { x: number | null; y: number | null } = { x: null, y: null };
+  let particles: { x: number; y: number; vx: number; vy: number; r: number }[] = [];
+  let W = 0;
+  let H = 0;
+  let headerH = 0; // header 实际高度：粒子只在其下方区域活动
+
+  function resize(canvas: HTMLCanvasElement) {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    // 读取 header 实际高度（BaseLayout 里的站名+导航条），粒子只从它下方开始
+    headerH = document.querySelector("header")?.offsetHeight ?? 0;
+    const count = Math.min(120, Math.floor((W * H) / 36000));
+    particles = Array.from({ length: count }, () => ({
+      x: Math.random() * W,
+      y: headerH + Math.random() * (H - headerH),
+      vx: (Math.random() - 0.5) * 0.6, // 水平速度：缓慢漂移
+      vy: (Math.random() - 0.5) * 0.6, // 垂直速度
+      r: Math.random() * 2 + 1,        // 半径 1~3px
+    }));
+  }
+
+  // 初始化 / 重建粒子动画（首次加载 + 每次 SPA 导航回到首页都调用）
+  function initParticles() {
+    const canvas = document.getElementById("particles") as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // 若已有动画循环，先停掉——防止多次导航后叠加多个循环
+    if (rafId !== null) cancelAnimationFrame(rafId);
+
+    resize(canvas);
+
+    const loop = () => {
+      ctx.clearRect(0, 0, W, H); // 清屏（本帧重画一切）
+
+      // 1. 移动粒子 + 画小圆点
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1; // 撞左右边缘，水平速度反向
+        if (p.y < headerH || p.y > H) p.vy *= -1; // 撞 header 底部 / 视口底部
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(243,244,246,0.6)"; // ink 白
+        ctx.fill();
+      }
+
+      // 2. 粒子间连线：距离 < 120px 画半透明线，透明度随距离衰减
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        for (let j = i + 1; j < particles.length; j++) {
+          const b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 120) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(243,244,246,${(1 - d / 120) * 0.3})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+
+        // 3. 鼠标连线：鼠标与粒子距离 < 160px，用更亮的 accent 黄
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = a.x - mouse.x, dy = a.y - mouse.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 160) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(254,240,138,${(1 - d / 160) * 0.8})`; // accent 黄
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      rafId = requestAnimationFrame(loop); // 请求下一帧，形成循环
+    };
+    loop();
+  }
+
+  // window 级监听器只在整页加载时注册一次（SPA 导航不重跑，不会重复注册）
+  window.addEventListener("resize", () => {
+    const c = document.getElementById("particles") as HTMLCanvasElement | null;
+    if (c) resize(c);
+  });
+  window.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener("mouseout", () => { mouse.x = null; mouse.y = null; });
+
+  // 离开首页（导航开始时）停掉动画，避免后台空转消耗 CPU
+  document.addEventListener("astro:before-preparation", () => {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  });
+
+  // 首次加载 + 每次 SPA 导航回到首页时重建粒子动画
+  initParticles();
+  document.addEventListener("astro:page-load", initParticles);
+</script>
