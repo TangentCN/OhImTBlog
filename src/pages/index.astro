@@ -1,7 +1,12 @@
 ---
-// 极简主页：粒子背景 + 标题
+// 极简主页：粒子背景 + 标题 + 简介
 // 文章列表已移到 /blog/（见 blog/index.astro）
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+// 简介：内容在 src/content/about/me.md，像文章一样独立管理，改文件即改简介
+const [about] = await getCollection("about");
+const { Content } = await render(about);
 ---
 
 <BaseLayout>
@@ -9,8 +14,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <canvas id="particles" class="pointer-events-none fixed inset-0 z-0"></canvas>
 
   <!-- 标题浮在粒子之上（relative z-10） -->
-  <main class="relative z-10 mx-auto max-w-3xl px-4 py-24 text-center">
-    <h1 class="text-3xl font-bold">OhImT Blog</h1>
+  <main class="relative z-10 mx-auto max-w-3xl px-4 py-50 text-center">
+    <h1 class="text-[42px] font-bold">OhImT Blog</h1>
+    <!-- 简介：prose-sm 小字号排版、居中；内容来自 about 集合 -->
+    <div class="prose prose-base text-[21px] prose-invert mx-auto mt-5 text-center">
+      <Content />
+    </div>
   </main>
 </BaseLayout>
 
@@ -31,7 +40,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     H = canvas.height = window.innerHeight;
     // 读取 header 实际高度（BaseLayout 里的站名+导航条），粒子只从它下方开始
     headerH = document.querySelector("header")?.offsetHeight ?? 0;
-    const count = Math.min(120, Math.floor((W * H) / 36000));
+    const count = Math.min(120, Math.floor((W * H) / 30000));
     particles = Array.from({ length: count }, () => ({
       x: Math.random() * W,
       y: headerH + Math.random() * (H - headerH),

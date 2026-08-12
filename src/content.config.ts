@@ -17,4 +17,11 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const about = defineCollection({
+  // 简介集合：扫描 src/content/about/ 下所有 .md
+  // 简介没有 frontmatter 字段（title/pubDate 是文章专属），用空 schema——正文即全部内容
+  loader: glob({ base: './src/content/about', pattern: '**/*.md' }),
+  schema: z.object({}),
+});
+
+export const collections = { blog, about };
