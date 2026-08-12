@@ -20,5 +20,7 @@ const art = fs.readFileSync("public/ascii_art.txt", "utf-8");
   <body class="flex min-h-screen items-center justify-center bg-page text-ink antialiased">
     <!-- pre 用 w-max：宽度 = 内容最宽行，字符画完整显示（不内部滚动） -->
     <pre class="w-max font-mono leading-snug text-ink/80">{art}</pre>
+    <!-- 音频：自动播放一次（不设 loop 即不循环）。音频文件放 public/ 下 -->
+    <audio src="/bitch.mp3" autoplay preload="auto"></audio>
   </body>
 </html>
