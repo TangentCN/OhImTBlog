@@ -34,3 +34,11 @@
   --color-accent-soft: #fef9c3; /* 强调 hover（原 yellow-100） */
   --color-on-accent: #030712;   /* 强调底上的文字：按钮深字（原 gray-950） */
 }
+
+/* ===== 行内代码修复 =====
+   typography 插件默认给行内 code 添加装饰性反引号（::before/::after content 为 `），
+   这里覆盖掉，让代码框内只显示真实内容（参考 novic.cc 的做法） */
+.prose code::before,
+.prose code::after {
+  content: none;
+}
