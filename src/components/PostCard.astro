@@ -12,7 +12,7 @@ const { post } = Astro.props;
 // 注：post.id 就是文件名（不含 .md），它决定详情页 URL：/blog/文件名/
 
 // 字数统计：post.body 是 Markdown 原始文本，去掉所有空白后统计字符数（中文按字、英文按字符）
-const wordCount = post.body.replace(/\s/g, "").length;
+const wordCount = (post.body ?? "").replace(/\s/g, "").length;
 ---
 <article class="relative rounded-4xl border border-line bg-page/30 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-[2px] hover:bg-page/50 hover:border-accent/40">
   <h2 class="text-xl font-semibold">
