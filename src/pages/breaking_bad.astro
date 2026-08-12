@@ -3,7 +3,6 @@
 // 内容：public/ascii_art.txt 的 ASCII 字符画，构建时用 fs 读取
 import BaseLayout from "../layouts/BaseLayout.astro";
 import fs from "node:fs";
-
 // 构建时读取 ASCII 字符画文件（路径相对项目根）
 const art = fs.readFileSync("public/ascii_art.txt", "utf-8");
 ---
