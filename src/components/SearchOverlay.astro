@@ -42,6 +42,17 @@ const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0
   }
 </style>
 
+<!-- is:global：mark 高亮由 JS 注入的 excerpt 产生（无 scoped hash），需全局样式才能命中 -->
+<style is:global>
+  /* 搜索结果中的匹配高亮：accent 色文字 + 淡黄底（深色主题适配） */
+  .search-results mark {
+    background: rgba(254, 240, 138, 0.2);
+    color: var(--color-accent);
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+</style>
+
 <!-- is:inline：Astro 原样输出脚本，动态 import 保留为运行时加载（不被打包解析） -->
 <script is:inline type="module">
   // ===== 搜索覆盖层逻辑 =====
@@ -88,12 +99,18 @@ const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0
         const data = await r.data();
         const title = escapeHtml(data.meta?.title || data.url);
         const desc = data.meta?.description ? escapeHtml(data.meta.description) : "";
+        // excerpt 是 Pagefind 生成的匹配片段（含 <mark> 高亮，精确到字），不转义以保留高亮标签
+        const excerpt = data.excerpt || "";
         const item = document.createElement("a");
         item.href = data.url;
         item.className = "block rounded-lg px-3 py-2 transition-colors hover:bg-surface/60";
         item.innerHTML =
           `<span class="block font-medium text-accent">${title}</span>` +
-          (desc ? `<span class="mt-0.5 block text-sm text-muted">${desc}</span>` : "");
+          (excerpt
+            ? `<span class="mt-1 block text-sm leading-relaxed text-soft">${excerpt}</span>`
+            : desc
+              ? `<span class="mt-0.5 block text-sm text-muted">${desc}</span>`
+              : "");
         results.appendChild(item);
       }
     } catch {
