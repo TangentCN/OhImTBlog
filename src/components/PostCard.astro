@@ -15,17 +15,17 @@ const { post } = Astro.props;
 const wordCount = (post.body ?? "").replace(/\s/g, "").length;
 ---
 <article class="relative rounded-4xl border border-line bg-page/30 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-[2px] hover:bg-page/50 hover:border-accent/40">
-  <h2 class="text-xl font-semibold">
-    <!-- after:absolute + inset-0：伪元素铺满整张卡片，点击卡片任意处 = 点击链接（stretched link） -->
-    <a href={`/blog/${post.id}/`} class="hover:text-accent after:absolute after:inset-0 after:content-['']">{post.data.title}</a>
-  </h2>
-  <!-- 日期 + 标签 + 字数（参考 novic.cc：同一行小字灰字；tags 用「 / 」分隔插在中间） -->
-  <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
+  <!-- 日期 + 标签 + 字数：放在标题和简介上方（参考 novic.cc 卡片布局；同一行小字灰字，tags 用「 / 」分隔） -->
+  <div class="flex flex-wrap items-center gap-2 text-sm text-muted">
     <time>{post.data.pubDate.toLocaleDateString()}</time>
     {post.data.tags.length > 0 && (
       <span>· {post.data.tags.join(" / ")}</span>
     )}
     <span>· {wordCount} 字</span>
   </div>
+  <h2 class="mt-1 text-xl font-semibold">
+    <!-- after:absolute + inset-0：伪元素铺满整张卡片，点击卡片任意处 = 点击链接（stretched link） -->
+    <a href={`/blog/${post.id}/`} class="hover:text-accent after:absolute after:inset-0 after:content-['']">{post.data.title}</a>
+  </h2>
   {post.data.description && <p class="mt-2 text-soft">{post.data.description}</p>}
 </article>
