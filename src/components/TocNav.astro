@@ -47,7 +47,7 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
        默认向右平移出视口隐藏；hover / pinned / hint 三种状态任一满足即滑入
        右缘恰好贴热区左缘（right-40 = 热区宽 w-40），鼠标从热区滑进面板无缝隙、hover 不中断 -->
   <nav
-    class="toc-panel absolute right-40 top-40 w-60 translate-x-[calc(100%+10rem)] rounded-2xl border border-line bg-page/70 p-3 text-sm opacity-0 shadow-xl backdrop-blur-md transition-all duration-300
+    class="toc-panel absolute right-40 top-40 w-75 translate-x-[calc(100%+10rem)] rounded-2xl border border-line bg-page/70 p-3 text-sm opacity-0 shadow-xl backdrop-blur-md transition-all duration-300
       group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100
       group-[.toc-pinned]:pointer-events-auto group-[.toc-pinned]:translate-x-0 group-[.toc-pinned]:opacity-100
       group-[.toc-hint]:pointer-events-auto group-[.toc-hint]:translate-x-0 group-[.toc-hint]:opacity-100"
@@ -160,7 +160,7 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
   let headerRestoreHidden = false; // 记录打开抽屉前 header 是否已隐藏（滚动隐藏），关闭时据此恢复
   function openDrawer() {
     drawer?.classList.add("translate-x-0");
-    overlay?.classList.add("opacity-100", "pointer-events-auto");
+    overlay?.classList.add("overlay-visible"); // 显示遮罩（自定义类，见下方 style，避免 Tailwind 互斥类覆盖问题）
     const header = document.querySelector(".header-nav");
     if (header) {
       headerRestoreHidden = header.classList.contains("header-hidden"); // 记住打开前状态
@@ -169,7 +169,7 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
   }
   function closeDrawer() {
     drawer?.classList.remove("translate-x-0");
-    overlay?.classList.remove("opacity-100", "pointer-events-auto");
+    overlay?.classList.remove("overlay-visible");
     // 打开前如果没隐藏（正常显示状态），关闭后恢复显示；打开前已隐藏（滚动隐藏）则保持隐藏
     if (!headerRestoreHidden) {
       document.querySelector(".header-nav")?.classList.remove("header-hidden");
@@ -208,3 +208,13 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
   // SPA 导航回到文章页时重建（View Transitions 不重跑 script，靠此事件）
   document.addEventListener("astro:page-load", init);
 </script>
+
+<style>
+  /* 抽屉遮罩显示态：不直接切换 Tailwind 的 pointer-events-none/auto 两个互斥类
+     （同时存在时谁生效取决于 CSS 生成顺序，auto 会被 none 覆盖导致遮罩点击穿透），
+     改用自定义类：特异性更高、必然覆盖默认的 opacity-0 / pointer-events-none */
+  .toc-overlay.overlay-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
