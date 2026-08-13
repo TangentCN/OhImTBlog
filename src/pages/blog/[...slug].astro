@@ -7,6 +7,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import TocNav from "../../components/TocNav.astro";
 import { getCollection, render } from "astro:content";
+import { tagSlug } from "../../lib/tags";
 
 // 构建时运行：遍历所有文章，为每篇生成 { params, props }
 export async function getStaticPaths() {
@@ -43,7 +44,10 @@ const { Content, headings } = await render(post);
       {post.data.tags.length > 0 && (
         <div class="mt-2 flex flex-wrap gap-2">
           {post.data.tags.map((tag) => (
-            <span class="rounded bg-surface px-2 py-1 text-sm text-soft">{tag}</span>
+            <a
+              href={`/blog/tags/${tagSlug(tag)}/`}
+              class="rounded bg-surface px-2 py-1 text-sm text-soft transition-colors hover:text-accent"
+            >{tag}</a>
           ))}
         </div>
       )}

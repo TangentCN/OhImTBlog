@@ -1,0 +1,39 @@
+---
+// tag 归档页（/blog/tags/<tag>/）：按标签浏览文章
+// [tag] 是路由参数（占位符），getStaticPaths 在构建时遍历所有标签，
+// 为每个标签生成一个独立页面——这就是"按 tag 浏览"的本质：内容有多少个 tag，就有多少张归档页
+
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PostCard from "../../../components/PostCard.astro";
+import { getCollection } from "astro:content";
+import { tagSlug } from "../../../lib/tags";
+
+// 构建时运行：收集所有文章里的标签（Set 去重），每个标签生成一个 { params, props }
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  // flatMap 把所有文章的 tags 数组展平成一个大数组，Set 自动去重
+  const tags = new Set(posts.flatMap((p) => p.data.tags));
+  return [...tags].map((tag) => ({
+    params: { tag: tagSlug(tag) }, // URL 用安全化的 slug（含空格/% 的 tag 也能生成路径）
+    props: {
+      tag, // 页面显示仍用原始 tag 名（如 "100% Human"）
+      // 该标签下的文章，按日期倒序（与列表页一致）
+      posts: posts
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`}>
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="text-3xl font-bold">#{tag}</h1>
+    <p class="mt-1 text-sm text-muted">共 {posts.length} 篇文章</p>
+    <div class="mt-6 flex flex-col gap-4">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+  </main>
+</BaseLayout>

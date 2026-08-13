@@ -4,17 +4,31 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostCard from "../../components/PostCard.astro";
 import { getCollection } from "astro:content";
+import { getAllTags, tagSlug } from "../../lib/tags";
 
 // getCollection 返回顺序不保证，必须自己排序。
 // valueOf() 把 Date 变成毫秒数字方便比较，大的在前 = 新的在前
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+// 聚合全部标签（去重 + 计数 + 按文章数降序），供顶部 tag 列表使用
+const allTags = getAllTags(posts);
 ---
 
 <BaseLayout>
   <main class="mx-auto max-w-3xl px-4 py-10">
     <h1 class="mb-15 text-3xl font-bold">Articles</h1>
+    <!-- tag 列表：所有标签的入口（#标签名 数量），按文章数降序，点击进入对应归档页（参考 novic.cc） -->
+    {allTags.length > 0 && (
+      <div class="mb-8 flex flex-wrap gap-2">
+        {allTags.map(({ tag, count }) => (
+          <a
+            href={`/blog/tags/${tagSlug(tag)}/`}
+            class="rounded-full border border-line bg-page/30 px-3 py-1 text-sm text-soft transition-colors hover:border-accent/40 hover:text-accent"
+          >#{tag} {count}</a>
+        ))}
+      </div>
+    )}
     <div class="flex flex-col gap-4">
       {posts.map((post) => <PostCard post={post} />)}
     </div>
