@@ -39,8 +39,10 @@ import { ClientRouter, slide } from "astro:transitions";
   <body class="bg-[url('/bg.png')] bg-cover bg-center bg-fixed bg-page text-ink antialiased">
     <!-- 外层包裹（header + 内容区）：整体至少一屏高，footer 紧跟其外、顶部恰落在首屏底部线 -->
     <div class="flex min-h-screen flex-col">
-      <!-- 毛玻璃 header：sticky 固定在顶、半透明背景 + backdrop-blur，滚动时内容在 header 后模糊 -->
-      <header class="sticky top-0 z-20 border-line bg-page/5 backdrop-blur-md">
+      <!-- 毛玻璃 header：sticky 固定在顶、半透明背景 + backdrop-blur，滚动时内容在 header 后模糊
+           header-nav：滚动隐藏逻辑的标识类（JS 切换 .header-hidden）
+           transition-transform duration-300：隐藏/恢复时的平滑滑出滑回动画 -->
+      <header class="header-nav sticky top-0 z-20 border-line bg-page/5 backdrop-blur-md transition-transform duration-300">
         <!-- 外层包裹：移动端 flex 两端布局（站名左、导航右，避免窄屏重叠）；桌面导航 absolute 居中 -->
         <div class="relative flex items-center px-4 md:px-8">
           <!-- 站名：移动端小号紧凑，桌面恢复原字号 -->
@@ -81,4 +83,48 @@ import { ClientRouter, slide } from "astro:transitions";
     // event.to 是目标 URL；/blog/*（文章/详情）在导航右侧，其余（首页）在左侧
     event.direction = event.to.pathname.startsWith("/blog") ? "forward" : "back";
   });
+</script>
+
+<style>
+  /* 滚动隐藏 header：transform 把 header 整体移出视口上方（视觉消失但占位还在，内容不跳动），
+     配合 header 的 transition-transform 实现平滑滑出/滑回 */
+  .header-nav.header-hidden {
+    transform: translateY(-100%);
+  }
+</style>
+
+<script>
+  // 滚动隐藏 header（下滚藏、上滚现）：
+  // 用两次滚动位置的差判断方向（scrollY - lastY 的符号）——
+  //   向下滚动且滚过 300px 才隐藏（避免刚进页面就消失）
+  //   向上滚动立即恢复
+  //   滚回顶部 100px 内强制显示（防顶部空白）
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  function updateHeader() {
+    const header = document.querySelector(".header-nav");
+    if (!header) return;
+    const y = window.scrollY;
+    const delta = y - lastY;
+    const HIDE_AFTER = 300; // 滚过该距离才允许隐藏
+    const SHOW_NEAR_TOP = 100; // 距顶部 100px 内强制显示
+    const DELTA = 5; // 单次向下滚动超过该阈值才触发隐藏（防抖）
+
+    if (y < SHOW_NEAR_TOP || delta < 0) {
+      header.classList.remove("header-hidden"); // 回顶部 或 向上滚 → 显示
+    } else if (delta > DELTA && y > HIDE_AFTER) {
+      header.classList.add("header-hidden"); // 向下滚且滚过 300px → 隐藏
+    }
+    lastY = y;
+    ticking = false;
+  }
+
+  // rAF 节流：scroll 高频触发，但每帧最多处理一次；passive 让滚动不被 JS 阻塞更顺滑
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(updateHeader);
+      ticking = true;
+    }
+  }, { passive: true });
 </script>
