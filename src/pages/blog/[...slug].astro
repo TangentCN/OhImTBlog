@@ -32,7 +32,7 @@ const { Content, headings } = await render(post);
     <a
       href="/blog/"
       aria-label="返回文章列表"
-      class="fixed left-4 top-30 md:left-95 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-page/50 text-ink/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-accent hover:border-accent/40 active:scale-95"
+      class="back-btn fixed top-30 z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-line bg-page/50 text-ink/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-accent hover:border-accent/40 active:scale-95 md:flex"
     >
       <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
     </a>
@@ -55,3 +55,14 @@ const { Content, headings } = await render(post);
     <TocNav headings={headings} />
   </main>
 </BaseLayout>
+
+<style>
+  /* 返回按钮定位（跟随文章左缘，窗口缩放不漂移）：
+     (100vw - 48rem) / 2 = 文章容器左缘（max-w-3xl 居中，48rem=768px）
+     + 2.75rem          = 相对文章左缘的基础偏移（原有视觉位置）
+     + var(--back-x)    = 额外左右微调：改这一个数即可调节按钮位置（负 = 左移，正 = 右移） */
+  .back-btn {
+    --back-x: -8rem;
+    left: calc((100vw - 48rem) / 2 + 2.75rem + var(--back-x));
+  }
+</style>
