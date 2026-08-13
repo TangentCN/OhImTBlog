@@ -44,12 +44,11 @@ const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0
 
 <!-- is:global：mark 高亮由 JS 注入的 excerpt 产生（无 scoped hash），需全局样式才能命中 -->
 <style is:global>
-  /* 搜索结果中的匹配高亮：accent 色文字 + 淡黄底（深色主题适配） */
+  /* 搜索结果中的匹配高亮：仅强调色文字 + 加粗，不加背景色 */
   .search-results mark {
-    background: rgba(254, 240, 138, 0.2);
+    background: transparent;
     color: var(--color-accent);
-    padding: 0 1px;
-    border-radius: 2px;
+    font-weight: 600;
   }
 </style>
 
@@ -144,11 +143,17 @@ const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0
     }
   });
 
-  // 按钮点击：事件委托（页面重建不重复绑定）
+  // 点击事件委托（页面重建不重复绑定）：
+  // 1. 点搜索按钮 → 打开
+  // 2. 点搜索面板外（遮罩，但不是面板内部）→ 关闭
   document.addEventListener("click", (e) => {
     const t = e.target;
     if (t.closest && t.closest(".search-toggle")) {
       openSearch();
+      return;
+    }
+    if (t.closest && t.closest(".search-overlay") && !t.closest(".search-overlay > div")) {
+      closeSearch();
     }
   });
 
