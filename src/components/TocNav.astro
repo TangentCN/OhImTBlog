@@ -156,14 +156,25 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
     document.querySelectorAll(".prose h2, .prose h3").forEach((h) => tocObserver?.observe(h));
   }
 
-  // 抽屉开合
+  // 抽屉开合；同时联动头栏：呼出目录时头栏自动隐藏（复用 BaseLayout 的 .header-hidden 类），关闭时按打开前状态恢复
+  let headerRestoreHidden = false; // 记录打开抽屉前 header 是否已隐藏（滚动隐藏），关闭时据此恢复
   function openDrawer() {
     drawer?.classList.add("translate-x-0");
     overlay?.classList.add("opacity-100", "pointer-events-auto");
+    const header = document.querySelector(".header-nav");
+    if (header) {
+      headerRestoreHidden = header.classList.contains("header-hidden"); // 记住打开前状态
+      header.classList.add("header-hidden"); // 呼出目录时头栏自动隐藏
+    }
   }
   function closeDrawer() {
     drawer?.classList.remove("translate-x-0");
     overlay?.classList.remove("opacity-100", "pointer-events-auto");
+    // 打开前如果没隐藏（正常显示状态），关闭后恢复显示；打开前已隐藏（滚动隐藏）则保持隐藏
+    if (!headerRestoreHidden) {
+      document.querySelector(".header-nav")?.classList.remove("header-hidden");
+    }
+    headerRestoreHidden = false;
   }
 
   // 事件委托到 document：全程只绑定一次（页面重建也不重复绑定）
