@@ -119,6 +119,12 @@ const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0
 
   function init() {
     overlay = document.querySelector(".search-overlay");
+    // 关键：组件在 header 内，而 header 有 backdrop-blur（backdrop-filter 会成为 fixed 后代的包含块），
+    // 若覆盖层留在 header 里，fixed 全屏会被限制成 header 大小、点不到页面其他地方。
+    // 把覆盖层移到 <body> 下，脱离该包含块，恢复相对视口全屏。
+    if (overlay && overlay.parentElement !== document.body) {
+      document.body.appendChild(overlay);
+    }
     input = overlay?.querySelector(".search-input") ?? null;
     results = overlay?.querySelector(".search-results") ?? null;
     // 输入防抖 300ms 再搜索（避免每敲一键都请求）
