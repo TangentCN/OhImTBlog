@@ -42,3 +42,13 @@
 .prose code::after {
   content: none;
 }
+
+/* 锚点跳转时，标题滚动到 sticky header 下方（否则被毛玻璃 header 挡住） */
+.prose :where(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 5rem;
+}
+
+/* 锚点（#id）跳转平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}

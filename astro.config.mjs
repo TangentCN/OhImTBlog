@@ -13,7 +13,8 @@ export default defineConfig({
   preview: {
     port: 45232,
   },
-  // Markdown 渲染：注册盘古之白插件（中英文衔接自动加空格）
+  // Markdown 渲染：注册盘古之白插件（中英文空格）。
+  // 注：heading id 与目录由 Astro 7 内置生成（getHeadings），无需自定义 rehype 插件
   markdown: {
     remarkPlugins: [remarkPangu],
   },
