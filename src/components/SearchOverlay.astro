@@ -1,0 +1,140 @@
+---
+// 静态站内搜索覆盖层（Pagefind，参考 novic.cc）：
+// - header 搜索按钮（Search ⌘K）：点击 / Ctrl+K 打开
+// - 覆盖层：全屏遮罩 + 搜索框 + 结果列表，Esc / 点遮罩关闭
+// - 搜索用 Pagefind：build 时生成 /pagefind/ 索引，前端只负责调用
+// 注：脚本用 is:inline（不经过 Vite 打包），因为动态 import("/pagefind/pagefind.js")
+// 若被 Vite 打包会尝试解析该模块（build 时它还不存在）导致运行时失败
+
+// 搜索图标（放大镜）
+const SEARCH_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
+---
+
+<Fragment>
+  <!-- header 搜索按钮：移动端在导航后、桌面 md:ml-auto 靠右（绝对居中的导航不占文档流） -->
+  <button
+    class="search-toggle flex h-9 items-center gap-1.5 rounded-full border border-line bg-page/50 px-3 text-sm text-soft backdrop-blur-md transition-colors hover:text-accent md:ml-auto"
+    aria-label="搜索"
+  >
+    <span class="[&_svg]:h-4 [&_svg]:w-4" set:html={SEARCH_ICON} />
+    <span class="hidden sm:inline">Search</span>
+    <kbd class="hidden rounded border border-line px-1 text-[11px] text-muted sm:inline">⌘K</kbd>
+  </button>
+
+  <!-- 搜索覆盖层：默认隐藏，.search-open 时显示（自定义类，JS 只管切类、动画交给 CSS） -->
+  <div class="search-overlay fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-4 pt-[18vh] opacity-0 pointer-events-none backdrop-blur-sm transition-opacity duration-200">
+    <div class="w-full max-w-xl rounded-2xl border border-line bg-page/95 p-4 shadow-2xl">
+      <input
+        class="search-input w-full bg-transparent text-lg text-ink outline-none placeholder:text-muted"
+        placeholder="搜索文章…"
+        autocomplete="off"
+      />
+      <div class="search-results mt-2 flex flex-col gap-1"></div>
+    </div>
+  </div>
+</Fragment>
+
+<style>
+  /* 搜索覆盖层显示态：JS 只切换 .search-open，显示/隐藏与动画由 CSS 控制 */
+  .search-overlay.search-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
+
+<!-- is:inline：Astro 原样输出脚本，动态 import 保留为运行时加载（不被打包解析） -->
+<script is:inline type="module">
+  // ===== 搜索覆盖层逻辑 =====
+  // overlay/input/results 在 init 里获取：View Transitions 跨页导航会替换 DOM，需每次刷新引用
+  let overlay = null;
+  let input = null;
+  let results = null;
+
+  function openSearch() {
+    overlay?.classList.add("search-open");
+    input?.focus();
+  }
+  function closeSearch() {
+    overlay?.classList.remove("search-open");
+  }
+
+  // Pagefind JS 懒加载：build 后才有 /pagefind/pagefind.js，dev server 下没有（会 404，走 catch 提示）
+  let pagefindPromise = null;
+  function loadPagefind() {
+    if (!pagefindPromise) {
+      pagefindPromise = import("/pagefind/pagefind.js").catch(() => null);
+    }
+    return pagefindPromise;
+  }
+
+  // 转义 HTML：结果里的标题/描述来自索引，含特殊字符时防止破坏页面结构
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  }
+
+  let debounce;
+  async function runSearch(q) {
+    try {
+      const pagefind = await loadPagefind();
+      if (!pagefind) throw new Error("pagefind 未加载");
+      const search = await pagefind.search(q);
+      if (!results) return;
+      results.innerHTML = "";
+      if (!search?.results?.length) {
+        results.innerHTML = `<p class="px-2 py-3 text-sm text-muted">未找到与「${escapeHtml(q)}」相关的内容</p>`;
+        return;
+      }
+      for (const r of search.results.slice(0, 20)) {
+        const data = await r.data();
+        const title = escapeHtml(data.meta?.title || data.url);
+        const desc = data.meta?.description ? escapeHtml(data.meta.description) : "";
+        const item = document.createElement("a");
+        item.href = data.url;
+        item.className = "block rounded-lg px-3 py-2 transition-colors hover:bg-surface/60";
+        item.innerHTML =
+          `<span class="block font-medium text-accent">${title}</span>` +
+          (desc ? `<span class="mt-0.5 block text-sm text-muted">${desc}</span>` : "");
+        results.appendChild(item);
+      }
+    } catch {
+      if (results) results.innerHTML = `<p class="px-2 py-3 text-sm text-muted">搜索暂不可用（需先构建生成索引）</p>`;
+    }
+  }
+
+  function init() {
+    overlay = document.querySelector(".search-overlay");
+    input = overlay?.querySelector(".search-input") ?? null;
+    results = overlay?.querySelector(".search-results") ?? null;
+    // 输入防抖 300ms 再搜索（避免每敲一键都请求）
+    input?.addEventListener("input", (e) => {
+      clearTimeout(debounce);
+      const q = (e.target.value || "").trim();
+      if (!q) {
+        if (results) results.innerHTML = "";
+        return;
+      }
+      debounce = setTimeout(() => runSearch(q), 300);
+    });
+  }
+
+  // 键盘：Ctrl/Cmd+K 打开、Esc 关闭（document 级，只绑一次）
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      openSearch();
+    } else if (e.key === "Escape") {
+      closeSearch();
+    }
+  });
+
+  // 按钮点击：事件委托（页面重建不重复绑定）
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.closest && t.closest(".search-toggle")) {
+      openSearch();
+    }
+  });
+
+  init();
+  document.addEventListener("astro:page-load", init);
+</script>

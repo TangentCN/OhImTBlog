@@ -15,6 +15,7 @@ const currentPath = Astro.url.pathname;
 const isBlog = currentPath.startsWith("/blog");
 
 // 引入全局样式。不 import 这一行，Tailwind 完全不生效
+import SearchOverlay from "../components/SearchOverlay.astro";
 import "../styles/global.css";
 
 // 页面切换动画：启用 Astro 内置的 View Transitions（SPA 式导航 + 过渡）
@@ -58,12 +59,15 @@ import { ClientRouter, slide } from "astro:transitions";
               class={isBlog ? "text-accent font-bold" : "text-soft font-bold hover:text-accent-soft"}
             >Articles</a>
           </nav>
+          <!-- 站内搜索：按钮 + 覆盖层（Ctrl+K 呼出，参考 novic.cc） -->
+          <SearchOverlay />
         </div>
       </header>
 
       <!-- flex-1：内容区在包裹内撑满剩余高度，footer 被顶到首屏底部线之下 -->
       <!-- transition:animate="slide"：内容区前进时右滑入、返回时反向滑动 -->
-      <div class="flex-1" transition:animate={slide({ duration: "0.3s" })}>
+      <!-- data-pagefind-body：告诉 Pagefind 只索引内容区（跳过 header 导航/页脚文字，搜索更精准） -->
+      <div class="flex-1" data-pagefind-body transition:animate={slide({ duration: "0.3s" })}>
         <slot />
       </div>
     </div>
