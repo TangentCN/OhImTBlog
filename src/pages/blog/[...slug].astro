@@ -53,7 +53,15 @@ const { Content, headings } = await render(post);
       )}
       <Content />
     </article>
-    <a href="/blog/" class="mt-8 inline-block text-accent">← 返回文章列表</a>
+    <!-- 文章结尾操作：返回列表（靠文章左边缘）+ 回到顶部（靠文章右边缘），两端对称 -->
+    <div class="mt-8 flex items-center justify-between">
+      <a href="/blog/" class="inline-block text-accent">← 返回文章列表</a>
+      <button
+        onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        class="back-top inline-block text-accent transition-colors hover:text-accent-soft"
+        style="--end-x: 3rem"
+      >↑ 回到顶部</button>
+    </div>
 
     <!-- 目录组件：PC 端右侧 dock（hover 唤出 + pin 常驻）+ 移动端抽屉；逻辑见 TocNav.astro -->
     <TocNav headings={headings} />
@@ -68,5 +76,12 @@ const { Content, headings } = await render(post);
   .back-btn {
     --back-x: -8rem;
     left: calc((100vw - 48rem) / 2 + 2.75rem + var(--back-x));
+  }
+
+  /* 文章结尾"回到顶部"按钮的右偏移调节：
+     按钮在容器右缘，但正文文字受容器右边距（px-4）影响没铺满到右缘，视觉上按钮显得"超出去"。
+     --end-x 正数 = 按钮向左内缩（与正文文字右缘对齐），负数 = 向右移。改按钮上的 --end-x 值即可微调 */
+  .back-top {
+    margin-right: var(--end-x);
   }
 </style>

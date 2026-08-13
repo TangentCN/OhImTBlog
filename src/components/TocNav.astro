@@ -30,6 +30,8 @@ const LIST_ICON = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 2
 const PIN_ICON = `<svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>`;
 // 关闭图标（×）
 const CLOSE_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+// 回到顶部图标（上箭头）
+const ARROW_UP_ICON = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`;
 // 隐藏滚动条但保留滚动：Firefox 用 scrollbar-width:none，Chrome/Edge 用 ::-webkit-scrollbar 隐藏
 const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 ---
@@ -42,12 +44,12 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
      aside 自身不拦截鼠标（pointer-events-none），hover 由热区接收 -->
 <aside class="toc-dock group fixed right-0 inset-y-0 z-20 hidden lg:block pointer-events-none">
   <!-- 热区：右侧 160px（w-40）宽的无形感应条，鼠标移入该区域即唤出目录，不占可见空间 -->
-  <div class="absolute right-0 inset-y-0 w-60 pointer-events-auto" aria-hidden="true"></div>
+  <div class="absolute right-0 inset-y-0 w-75 pointer-events-auto" aria-hidden="true"></div>
   <!-- 目录面板：弹出位置 right-40 top-40（还原最初自定义的位置，浮在正文右上角）
        默认向右平移出视口隐藏；hover / pinned / hint 三种状态任一满足即滑入
        右缘恰好贴热区左缘（right-40 = 热区宽 w-40），鼠标从热区滑进面板无缝隙、hover 不中断 -->
   <nav
-    class="toc-panel absolute right-40 top-40 w-75 translate-x-[calc(100%+10rem)] rounded-2xl border border-line bg-page/70 p-3 text-sm opacity-0 shadow-xl backdrop-blur-md transition-all duration-300
+    class="toc-panel absolute right-40 top-40 w-60 translate-x-[calc(100%+10rem)] rounded-2xl border border-line bg-page/70 p-3 text-sm opacity-0 shadow-xl backdrop-blur-md transition-all duration-300
       group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100
       group-[.toc-pinned]:pointer-events-auto group-[.toc-pinned]:translate-x-0 group-[.toc-pinned]:opacity-100
       group-[.toc-hint]:pointer-events-auto group-[.toc-hint]:translate-x-0 group-[.toc-hint]:opacity-100"
@@ -80,6 +82,15 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
   aria-label="打开目录"
 >
   <span class="[&_svg]:h-5 [&_svg]:w-5" set:html={LIST_ICON} />
+</button>
+
+<!-- 回到顶部按钮：目录按钮下方（top-[10.75rem] = 目录按钮 top-30 120px + 按钮高 40px + 12px 间距），
+     同样式圆形悬浮 + 上箭头，点击平滑回顶（事件委托 .toc-top 处理） -->
+<button
+  class="toc-top fixed right-4 top-[10.75rem] z-30 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-page/50 text-ink/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-accent active:scale-95 lg:hidden"
+  aria-label="回到顶部"
+>
+  <span class="[&_svg]:h-5 [&_svg]:w-5" set:html={ARROW_UP_ICON} />
 </button>
 
 <!-- 遮罩：抽屉打开时盖住正文，点击关闭 -->
@@ -189,6 +200,10 @@ const NO_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
     }
     if (t.closest(".toc-open")) {
       openDrawer();
+      return;
+    }
+    if (t.closest(".toc-top")) {
+      window.scrollTo({ top: 0, behavior: "smooth" }); // 回到顶部（平滑）
       return;
     }
     // 点遮罩 / 关闭按钮 / 抽屉里的目录项 → 收起抽屉（目录项同时执行默认锚点跳转）
