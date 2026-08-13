@@ -1,0 +1,194 @@
+---
+// 文章目录组件（TocNav）：在文章详情页使用，接收标题数组，渲染两套目录：
+//   1. PC 端（lg+）：右侧 dock —— 默认隐藏，hover 唤出，pin 按钮可固定常驻（localStorage 记住）
+//   2. 移动端（lg-）：右上角按钮 → 左侧滑入抽屉
+// 滚动高亮（IntersectionObserver 观察 .toc-link 对应标题）由两处目录共用
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+// 目录：取 h2 及以上（h1 是文章标题本身，不列入目录）
+const toc = headings.filter((h) => h.depth >= 2);
+
+// 目录项通用类：层级缩进 + 滚动高亮样式（高亮脚本按 .toc-link 类定位所有目录链接）
+const tocLinkClass = (depth: number) =>
+  `toc-link -ml-px block border-l-2 border-transparent py-0.5 text-soft hover:text-accent ${
+    depth >= 3 ? "pl-8" : "pl-4"
+  }`;
+
+// 目录图标（三条线 + 三个小圆点，像"文章结构"）
+const LIST_ICON = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>`;
+// pin 图标（图钉：点击后目录常驻）
+const PIN_ICON = `<svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>`;
+// 关闭图标（×）
+const CLOSE_ICON = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+---
+
+<!-- 只有存在可列入目录的标题时才渲染目录（避免整篇只有一个大标题时出现空壳） -->
+{toc.length > 0 && (
+<Fragment>
+<!-- ===== PC 端目录 dock（lg 及以上显示） ===== -->
+<!-- group：给 aside 贴"小组标签"，子孙可用 group-hover / group-[.toc-pinned] 响应它的状态 -->
+<aside class="toc-dock group fixed right-0 top-40 z-20 hidden lg:block">
+  <!-- 目录面板：absolute 贴手柄左侧（right-11 = 44px = 手柄宽 w-11，紧贴无缝隙防 hover 中途断开）
+       默认向右平移出视口隐藏；hover / pinned / hint 三种状态任一满足即滑入 -->
+  <nav
+    class="toc-panel absolute right-11 top-0 w-60 translate-x-[calc(100%+3rem)] rounded-2xl border border-line bg-page/70 p-3 text-sm opacity-0 shadow-xl backdrop-blur-md transition-all duration-300
+      group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100
+      group-[.toc-pinned]:pointer-events-auto group-[.toc-pinned]:translate-x-0 group-[.toc-pinned]:opacity-100
+      group-[.toc-hint]:pointer-events-auto group-[.toc-hint]:translate-x-0 group-[.toc-hint]:opacity-100"
+  >
+    <div class="mb-2 flex items-center justify-between">
+      <p class="font-semibold text-soft">目录</p>
+      <!-- pin 按钮：点击固定/取消常驻；pinned 时图标高亮 accent（脚本切换 .toc-pinned + 颜色 + 写回 localStorage） -->
+      <button class="toc-pin flex h-6 w-6 items-center justify-center rounded text-muted transition-colors hover:text-accent" aria-label="固定目录">
+        <span set:html={PIN_ICON} />
+      </button>
+    </div>
+    <ul class="max-h-[60vh] space-y-1 overflow-y-auto border-l border-line">
+      {toc.map((h) => (
+        <li>
+          <a href={`#${h.slug}`} class={tocLinkClass(h.depth)}>{h.text}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <!-- 手柄：aside 里唯一"占位"元素，永远可见；hover 它（或滑出的面板）即唤出目录 -->
+  <button class="pointer-events-auto flex h-40 w-11 flex-col items-center justify-center gap-2 rounded-l-xl border border-line border-r-0 bg-page/70 text-xs text-soft backdrop-blur-sm transition-colors hover:text-accent" aria-label="展开目录">
+    <span class="[&_svg]:h-4 [&_svg]:w-4" set:html={LIST_ICON} />
+    <span class="[writing-mode:vertical-rl]">目录</span>
+  </button>
+</aside>
+
+<!-- ===== 移动端（lg 以下）：右上角按钮 + 左侧抽屉 ===== -->
+<!-- 右上角目录按钮：与左上角返回按钮（top-30）同一行，视觉对称 -->
+<button
+  class="toc-open fixed right-4 top-30 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-page/50 text-ink/80 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/10 hover:text-accent active:scale-95 lg:hidden"
+  aria-label="打开目录"
+>
+  <span class="[&_svg]:h-5 [&_svg]:w-5" set:html={LIST_ICON} />
+</button>
+
+<!-- 遮罩：抽屉打开时盖住正文，点击关闭 -->
+<div class="toc-overlay fixed inset-0 z-40 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+<!-- 左侧抽屉：默认 -translate-x-full（向左移出视口），展开时 translate-x-0 滑入 -->
+<aside class="toc-drawer fixed inset-y-0 left-0 z-50 w-64 -translate-x-full border-r border-line bg-page/95 p-4 shadow-2xl backdrop-blur-md transition-transform duration-300 lg:hidden">
+  <div class="mb-4 flex items-center justify-between">
+    <p class="font-semibold text-soft">目录</p>
+    <button class="toc-close flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:text-accent" aria-label="关闭目录">
+      <span set:html={CLOSE_ICON} />
+    </button>
+  </div>
+  <ul class="max-h-[calc(100vh-6rem)] space-y-1 overflow-y-auto border-l border-line">
+    {toc.map((h) => (
+      <li>
+        <a href={`#${h.slug}`} class={tocLinkClass(h.depth)}>{h.text}</a>
+      </li>
+    ))}
+  </ul>
+</aside>
+</Fragment>
+)}
+
+<script>
+  // ===== 组件初始化 =====
+  // drawer/overlay 在 init 里重新获取：View Transitions 跨页导航会替换 DOM，
+  // 顶层 const 会指向旧元素，因此用 let 且每次 init 刷新引用
+  let drawer: HTMLElement | null;
+  let overlay: HTMLElement | null;
+
+  // 1) pin 状态：从 localStorage 恢复（"记住上次选择"）
+  function applyPinned() {
+    const dock = document.querySelector(".toc-dock");
+    const pinBtn = document.querySelector(".toc-pin");
+    const pinned = localStorage.getItem("toc-pinned") === "1";
+    dock?.classList.toggle("toc-pinned", pinned);
+    pinBtn?.classList.toggle("text-accent", pinned);
+  }
+
+  // 2) 进入提示：未常驻时目录自动出现约 2.5s，让用户知道它藏在哪里，再收回
+  function initHint() {
+    const dock = document.querySelector(".toc-dock");
+    if (!dock || dock.classList.contains("toc-pinned")) return; // 已常驻则跳过
+    dock.classList.add("toc-hint");
+    setTimeout(() => dock.classList.remove("toc-hint"), 2500);
+    // 若提示期间用户点了 pin：toc-pinned 已加，提示移除后目录仍常驻 ✓
+  }
+
+  // 3) 滚动高亮：IntersectionObserver 观察标题进入视口上 20%~30% 观察带 → 高亮对应目录项
+  let tocObserver: IntersectionObserver | null = null;
+  function initTocHighlight() {
+    const links = document.querySelectorAll(".toc-link"); // PC 面板 + 移动抽屉两处目录项
+    if (!links.length) return;
+    if (tocObserver) tocObserver.disconnect(); // 防重复/泄漏
+    tocObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const target = `#${entry.target.id}`;
+            links.forEach((a) => {
+              const isActive = a.getAttribute("href") === target;
+              a.classList.toggle("text-accent", isActive);
+              a.classList.toggle("text-soft", !isActive);
+              a.classList.toggle("border-accent", isActive);
+              a.classList.toggle("border-transparent", !isActive);
+              a.classList.toggle("font-medium", isActive);
+            });
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -70% 0px" }
+    );
+    document.querySelectorAll(".prose h2, .prose h3").forEach((h) => tocObserver?.observe(h));
+  }
+
+  // 抽屉开合
+  function openDrawer() {
+    drawer?.classList.add("translate-x-0");
+    overlay?.classList.add("opacity-100", "pointer-events-auto");
+  }
+  function closeDrawer() {
+    drawer?.classList.remove("translate-x-0");
+    overlay?.classList.remove("opacity-100", "pointer-events-auto");
+  }
+
+  // 事件委托到 document：全程只绑定一次（页面重建也不重复绑定）
+  document.addEventListener("click", (e) => {
+    const t = e.target as Element;
+    if (t.closest(".toc-pin")) {
+      const dock = document.querySelector(".toc-dock");
+      const pinned = dock?.classList.toggle("toc-pinned") ?? false;
+      document.querySelector(".toc-pin")?.classList.toggle("text-accent", pinned);
+      localStorage.setItem("toc-pinned", pinned ? "1" : "0");
+      return;
+    }
+    if (t.closest(".toc-open")) {
+      openDrawer();
+      return;
+    }
+    // 点遮罩 / 关闭按钮 / 抽屉里的目录项 → 收起抽屉（目录项同时执行默认锚点跳转）
+    if (t.closest(".toc-overlay") || t.closest(".toc-close") || t.closest(".toc-drawer .toc-link")) {
+      closeDrawer();
+    }
+  });
+
+  function init() {
+    drawer = document.querySelector(".toc-drawer");
+    overlay = document.querySelector(".toc-overlay");
+    applyPinned();
+    initHint();
+    initTocHighlight();
+  }
+  init();
+  // SPA 导航回到文章页时重建（View Transitions 不重跑 script，靠此事件）
+  document.addEventListener("astro:page-load", init);
+</script>

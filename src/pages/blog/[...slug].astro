@@ -5,6 +5,7 @@
 // getStaticPaths 在构建时把每篇文章都变成一个独立 URL（纯静态也能有多个详情页）
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import TocNav from "../../components/TocNav.astro";
 import { getCollection, render } from "astro:content";
 
 // 构建时运行：遍历所有文章，为每篇生成 { params, props }
@@ -20,10 +21,8 @@ const { post } = Astro.props;
 // render 把 Markdown 编译成一个组件，<Content /> 再把正文"画"到页面上
 // render 返回 { Content, headings }：headings 是 Astro 内置提取的标题结构（depth/slug/text），
 // 其 slug 与渲染后标题的 id 完全一致（Astro 内置 github-slugger 生成，含同名唯一化）
+// headings 传给 TocNav 组件，由组件内部过滤出目录（取 h2 及以上）
 const { Content, headings } = await render(post);
-
-// 目录：取 h2 及以上（h1 是文章标题本身，不列入目录）
-const toc = headings.filter((h) => h.depth >= 2);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -52,59 +51,7 @@ const toc = headings.filter((h) => h.depth >= 2);
     </article>
     <a href="/blog/" class="mt-8 inline-block text-accent">← 返回文章列表</a>
 
-    <!-- 侧边目录：fixed 视口右侧（不占文档流，不挤压文章）；ul 竖线 + pl 层级缩进 -->
-    {toc.length > 0 && (
-      <aside class="hidden lg:block fixed right-40 top-40 z-10 w-60">
-        <nav class="rounded-2xl border border-line bg-page/50 p-3 text-sm backdrop-blur-sm">
-          <p class="mb-2 font-semibold text-soft">目录</p>
-          <ul class="space-y-1 border-l border-line">
-            {toc.map((h) => (
-              <li>
-                <a
-                  href={`#${h.slug}`}
-                  class={`toc-link -ml-px block border-l-2 border-transparent py-0.5 text-soft hover:text-accent ${h.depth >= 3 ? "pl-8" : "pl-4"}`}
-                >{h.text}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-    )}
+    <!-- 目录组件：PC 端右侧 dock（hover 唤出 + pin 常驻）+ 移动端抽屉；逻辑见 TocNav.astro -->
+    <TocNav headings={headings} />
   </main>
 </BaseLayout>
-
-<script>
-  // 滚动高亮目录：IntersectionObserver 观察标题进入视口中上部观察带 → 高亮对应目录项
-  let tocObserver: IntersectionObserver | null = null;
-  function initTocHighlight() {
-    const links = document.querySelectorAll(".toc-link");
-    if (!links.length) return;
-    // 先断开旧观察器（SPA 导航重建时防重复/泄漏）
-    if (tocObserver) tocObserver.disconnect();
-    tocObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const target = `#${entry.target.id}`;
-            links.forEach((a) => {
-              const isActive = a.getAttribute("href") === target;
-              // 互斥切换：高亮用 text-accent，否则 text-soft
-              a.classList.toggle("text-accent", isActive);
-              a.classList.toggle("text-soft", !isActive);
-              // 指示当前位置（滚动高亮）：文字高亮 + 左侧竖线变 accent（hover 时不出现竖线）
-              a.classList.toggle("border-accent", isActive);
-              a.classList.toggle("border-transparent", !isActive);
-              a.classList.toggle("font-medium", isActive);
-            });
-          }
-        }
-      },
-      { rootMargin: "-20% 0px -70% 0px" } // 观察带：视口上 20%~30% 区域
-    );
-    // ?. 可选链：tocObserver 为 null 时安全跳过（回调内 TS 无法窄化闭包变量）
-    document.querySelectorAll(".prose h2, .prose h3").forEach((h) => tocObserver?.observe(h));
-  }
-  // 首次加载 + SPA 导航回到页面时重建（View Transitions 不重跑 script，需手动重建）
-  initTocHighlight();
-  document.addEventListener("astro:page-load", initTocHighlight);
-</script>
