@@ -2,7 +2,7 @@
 title: "转人工"
 description: "这个网站上第一点人类痕迹"
 pubDate: 2026-08-10
-tags: ["100% Human", "OhImT匠心手作"]
+tags: ["100% Human", "OhImT匠心手作", "废话"]
 ---
 
 
