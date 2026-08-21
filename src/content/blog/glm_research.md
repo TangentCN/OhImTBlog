@@ -176,10 +176,10 @@ API 响应正常。时间是 20:18 。但是可以看到回复和组3有明显�
 
 **阿里也是学到了你高哥的精髓，这 token 钱我给了，下一部魂游你来做🙌🙌🙌**
 
->*The fallen tokens tell a story.*
->*Of how a Vibecoder became API Lord.*
->*In our home, across the web, the Cherry Studio.*
+>*The fallen tokens tell a story.*  
+>*Of how a Vibecoder became API Lord.*  
+>*In our home, across the web, the Cherry Studio.*  
 >
->*Our seed will look back upon us, and **recall**.*
->*An Age of Fracture.*
+>*Our seed will look back upon us, and **recall**.*  
+>*An Age of Fracture.*  
 
